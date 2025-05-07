@@ -54,11 +54,11 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-      this.m_driverController.leftTrigger().onTrue(this.intake.setState(IntakeState.INTAKING));
-      this.m_driverController.rightTrigger().onTrue(this.intake.setState(IntakeState.SCORING));
+      this.m_driverController.leftTrigger().onTrue(this.intake.setState(IntakeState.INTAKING)).onFalse(this.intake.setState(IntakeState.STOW));
+      this.m_driverController.rightTrigger().onTrue(this.intake.setState(IntakeState.SCORING)).onFalse(this.intake.setState(IntakeState.STOW));
       this.m_driverController.a().onTrue(this.intake.setState(IntakeState.CLIMBSTART)).onFalse(this.intake.setState(IntakeState.CLIMBFINAL));
       new Trigger(()->this.intake.hasCoral()).whileTrue(Commands.runOnce(()->this.led.setControl(new StrobeAnimation(0, 100).withColor(new RGBWColor(0,255,0))))).onFalse(Commands.runOnce(()->this.led.setControl(new SolidColor(0, 100).withColor(new RGBWColor(255, 0, 0)))));
-      
+      this.m_driverController.b().onTrue(this.intake.setState(IntakeState.OUTTAKING)).onFalse(this.intake.setState(IntakeState.STOW));
   }
 
 
