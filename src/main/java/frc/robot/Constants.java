@@ -16,4 +16,10 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+  public static class IntakeConstants{
+    public static final String kIntakeCanivoreName = "Superstructure";
+    public static final int kIntakePivotOneCanID = 20;
+    public static final int kIntakePivotTwoCanID = 21;
+    public static final int kIntakeRollerCanID = 20;
+  }
 }

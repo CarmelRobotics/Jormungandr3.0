@@ -10,6 +10,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
     private TalonFX pivotKrakenOne;
@@ -18,10 +19,12 @@ public class Intake extends SubsystemBase {
 
     public IntakeState currentState = IntakeState.STOW;
     final MotionMagicVoltage m_request;
+
+
     public Intake(){
-        pivotKrakenOne = new TalonFX(20, "Superstructure");
-        pivotKrakenTwo = new TalonFX(21, "Superstructure");
-        rollerKraken = new TalonFX(22, "Superstructure");
+        pivotKrakenOne = new TalonFX(IntakeConstants.kIntakePivotOneCanID, IntakeConstants.kIntakeCanivoreName);
+        pivotKrakenTwo = new TalonFX(IntakeConstants.kIntakePivotTwoCanID, IntakeConstants.kIntakeCanivoreName);
+        rollerKraken = new TalonFX(IntakeConstants.kIntakeRollerCanID, IntakeConstants.kIntakeCanivoreName);
         m_request = new MotionMagicVoltage(0);
         configMotors();
     }
@@ -76,6 +79,7 @@ public class Intake extends SubsystemBase {
             this.rollerState = rollerState;
         }
     }
+
     public enum PivotState{
         STOW(0),
         DOWN(-3),
@@ -87,6 +91,7 @@ public class Intake extends SubsystemBase {
             this.position = position;
         }
     }
+
     public enum RollerState{
         INTAKE(12),
         OUTTAKE(-12),
@@ -102,12 +107,17 @@ public class Intake extends SubsystemBase {
             this.currentState = state;
         });
     }
+
     @Override
     public void periodic() {
         this.pivotKrakenOne.setControl(m_request.withPosition(this.currentState.pivotState.position));
         this.rollerKraken.setVoltage(this.currentState.rollerState.volts);
         DogLog.log("Intake State", this.currentState);
+        if(hasCoral()){
+            DogLog.log("Has Coral", true);
+        }
     }
+
     public boolean hasCoral(){
         return (this.rollerKraken.getSupplyCurrent().getValueAsDouble() > 4 && this.rollerKraken.getVelocity().getValueAsDouble() == 0);
     }
