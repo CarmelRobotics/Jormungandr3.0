@@ -17,6 +17,8 @@ import com.ctre.phoenix6.controls.StrobeAnimation;
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public Intake intake = new Intake();
+
   public CANdle led = new CANdle(50);
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -48,7 +51,10 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
+    NamedCommands.registerCommand("zero", this.drivetrain.zeroGyro());
+    NamedCommands.registerCommand("score",this.intake.setState(IntakeState.SCORING));
     configureBindings();
+
   }
 
   /**
@@ -71,16 +77,17 @@ public class RobotContainer {
               .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate * 1.25) // Drive counterclockwise
                                                                                     // with negative X (left)
       ));
-
+      drivetrain.close();
       this.m_driverController.leftTrigger().onTrue(this.intake.setState(IntakeState.INTAKING)).onFalse(this.intake.setState(IntakeState.STOW));
       this.m_driverController.rightTrigger().onTrue(this.intake.setState(IntakeState.SCORING)).onFalse(this.intake.setState(IntakeState.STOW));
      // this.m_driverController.rightBumper().onTrue(this.intake.setState(IntakeState.SCORE_BACK)).onFalse(this.intake.setState(IntakeState.STOW));
       this.m_driverController.leftBumper().onTrue(this.intake.setState(IntakeState.STATION_INTAKE)).onFalse(this.intake.setState(IntakeState.STOW));
-      this.m_driverController.a().onTrue(this.intake.setState(IntakeState.CLIMBSTART)).onFalse(this.intake.setState(IntakeState.CLIMBFINAL));
-      new Trigger(()->this.intake.hasCoral()).whileTrue(Commands.runOnce(()->this.led.setControl(new StrobeAnimation(0, 100).withColor(new RGBWColor(0,255,0))))).onFalse(Commands.runOnce(()->this.led.setControl(new SolidColor(0, 100).withColor(new RGBWColor(255, 0, 0)))));
-      this.m_driverController.b().onTrue(this.intake.setState(IntakeState.OUTTAKING)).onFalse(this.intake.setState(IntakeState.STOW));
+      this.m_driverController.a().onTrue(this.intake.setState(IntakeState.CLIMBSTART));
+      this.m_driverController.b().onTrue(this.intake.setState(IntakeState.STOW_DOWN));
       this.m_driverController.x().onTrue(this.drivetrain.zeroGyro());
+      this.m_driverController.y().onFalse(this.intake.setState(IntakeState.STOW));
   }
+
 
 
   /**
@@ -90,6 +97,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return null;
+    return AutoBuilder.buildAuto("auto");
   }
 }

@@ -23,9 +23,9 @@ public class Intake extends SubsystemBase {
 
 
     public Intake(){
-        pivotKrakenOne = new TalonFX(IntakeConstants.kIntakePivotOneCanID, IntakeConstants.kIntakeCanivoreName);
-        pivotKrakenTwo = new TalonFX(IntakeConstants.kIntakePivotTwoCanID, IntakeConstants.kIntakeCanivoreName);
-        rollerKraken = new TalonFX(IntakeConstants.kIntakeRollerCanID, IntakeConstants.kIntakeCanivoreName);
+        pivotKrakenOne = new TalonFX(IntakeConstants.kIntakePivotOneCanID);
+        pivotKrakenTwo = new TalonFX(IntakeConstants.kIntakePivotTwoCanID);
+        rollerKraken = new TalonFX(IntakeConstants.kIntakeRollerCanID);
         m_request = new MotionMagicVoltage(0);
         configMotors();
     }
@@ -38,12 +38,12 @@ public class Intake extends SubsystemBase {
         slot0Configs.kS = 0.25; // Add 0.25 V output to overcome static friction
         slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
         slot0Configs.kA = 0.01; // An acceleration of 1 rps/s requires 0.01 V output
-        slot0Configs.kP = 7; // A position error of 2.5 rotations results in 12 V output
+        slot0Configs.kP = 8; // A position error of 2.5 rotations results in 12 V output
         slot0Configs.kI = 0; // no output for integrated error
         slot0Configs.kD = 0.1; // A velocity error of 1 rps results in 0.1 V output
         var motionMagicConfigs = pivOneConfig.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 100; // Target cruise velocity of 80 rps
-        motionMagicConfigs.MotionMagicAcceleration = 250; // Target acceleration of 160 rps/s (0.5 seconds)
+        motionMagicConfigs.MotionMagicCruiseVelocity = 120; // Target cruise velocity of 80 rps
+        motionMagicConfigs.MotionMagicAcceleration = 600; // Target acceleration of 160 rps/s (0.5 seconds)
         motionMagicConfigs.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
         var invert = pivOneConfig.MotorOutput;
         invert.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -53,12 +53,12 @@ public class Intake extends SubsystemBase {
         slot0Configs1.kS = 0.25; // Add 0.25 V output to overcome static friction
         slot0Configs1.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
         slot0Configs1.kA = 0.01; // An acceleration of 1 rps/s requires 0.01 V output
-        slot0Configs1.kP = 7; // A position error of 2.5 rotations results in 12 V output
+        slot0Configs1.kP = 8; // A position error of 2.5 rotations results in 12 V output
         slot0Configs1.kI = 0; // no output for integrated error
         slot0Configs1.kD = 0.1; // A velocity error of 1 rps results in 0.1 V output
         var motionMagicConfigs1 = pivTwoConfig.MotionMagic;
-        motionMagicConfigs1.MotionMagicCruiseVelocity = 100; // Target cruise velocity of 80 rps
-        motionMagicConfigs1.MotionMagicAcceleration = 250; // Target acceleration of 160 rps/s (0.5 seconds)
+        motionMagicConfigs1.MotionMagicCruiseVelocity = 120; // Target cruise velocity of 80 rps
+        motionMagicConfigs1.MotionMagicAcceleration = 600; // Target acceleration of 160 rps/s (0.5 seconds)
         motionMagicConfigs1.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
         var invert1 = pivTwoConfig.MotorOutput;
         invert1.Inverted = InvertedValue.Clockwise_Positive;
@@ -73,7 +73,8 @@ public class Intake extends SubsystemBase {
         currentLimitconfigs.SupplyCurrentLimitEnable = true;
 
         var rollerCurrentLimit = rollerConfig.CurrentLimits;
-        rollerCurrentLimit.SupplyCurrentLimit = 15;
+        rollerCurrentLimit.SupplyCurrentLowerLimit = 5;
+        rollerCurrentLimit.SupplyCurrentLowerTime = 1.25;
         rollerCurrentLimit.SupplyCurrentLimitEnable = true;
 
         this.pivotKrakenOne.getConfigurator().apply(pivOneConfig);
@@ -82,24 +83,15 @@ public class Intake extends SubsystemBase {
 
 
     }
-    private void setRollerLimit(double limit){
-        var rollerConfig = new TalonFXConfiguration();
-        
-        var rollerCurrentLimit = rollerConfig.CurrentLimits;
-        rollerCurrentLimit.SupplyCurrentLimit = limit;
-        rollerCurrentLimit.SupplyCurrentLimitEnable = true;
-        this.rollerKraken.getConfigurator().apply(rollerConfig);
-
-    }
-
 
     public enum IntakeState{
         INTAKING(PivotState.DOWN,RollerState.INTAKE),
         OUTTAKING(PivotState.DOWN,RollerState.OUTTAKE),
         SCORING(PivotState.SCORE,RollerState.OUTTAKE),
-        CLIMBSTART(PivotState.CLIMB,RollerState.INTAKE),
-        CLIMBFINAL(PivotState.STOW,RollerState.IDLE),
+        CLIMBSTART(PivotState.CLIMB,RollerState.STOP),
+        CLIMBFINAL(PivotState.STOW,RollerState.STOP),
         STOW(PivotState.STOW,RollerState.IDLE),
+        STOW_DOWN(PivotState.DOWN,RollerState.STOP),
         STATION_INTAKE(PivotState.STATION,RollerState.INTAKE);
         public PivotState pivotState;
         public RollerState rollerState;
@@ -122,9 +114,10 @@ public class Intake extends SubsystemBase {
     }
 
     public enum RollerState{
-        INTAKE(-12),
+        INTAKE(-7.5),
         OUTTAKE(12),
-        IDLE(-5);
+        STOP(0),
+        IDLE(0);
         public double volts;
         private RollerState(double volts){
             this.volts = volts;
@@ -151,18 +144,10 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("Encoder val 2", this.pivotKrakenTwo.getPosition().getValueAsDouble());
         SmartDashboard.putBoolean("Kraken connected", this.pivotKrakenTwo.isConnected());
         SmartDashboard.putString("current state", this.currentState.toString());
-        boolean stall = (this.rollerKraken.getSupplyCurrent().getValueAsDouble() > 5) && this.rollerKraken.getVelocity().getValueAsDouble() == 0;
-        SmartDashboard.putBoolean("stalling rollers", stall);
-        if(stall){
-            this.setRollerLimit(4);
-        } else {
-            this.setRollerLimit(15);
-        }
+        SmartDashboard.putNumber("roller current", this.rollerKraken.getSupplyCurrent().getValueAsDouble());
     }
 
-    public boolean hasCoral(){
-        return (this.rollerKraken.getSupplyCurrent().getValueAsDouble() > 4 && this.rollerKraken.getVelocity().getValueAsDouble() == 0);
-    }
+    
     
     
 }

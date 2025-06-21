@@ -74,8 +74,10 @@ public class Robot extends TimedRobot {
     // this line or comment it out.
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
+    } else {
+     // this.m_robotContainer.intake.zeroEncoders();
     }
-    this.m_robotContainer.intake.zeroEncoders();
+   
 
   }
 
