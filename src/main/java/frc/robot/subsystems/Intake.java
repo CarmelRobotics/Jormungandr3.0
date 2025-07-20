@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,6 +29,8 @@ public class Intake extends SubsystemBase {
         rollerKraken = new TalonFX(IntakeConstants.kIntakeRollerCanID);
         m_request = new MotionMagicVoltage(0);
         configMotors();
+        pivotKrakenOne.setNeutralMode(NeutralModeValue.Brake);
+        pivotKrakenTwo.setNeutralMode(NeutralModeValue.Brake);
     }
 
     public void configMotors(){
@@ -47,6 +50,7 @@ public class Intake extends SubsystemBase {
         motionMagicConfigs.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
         var invert = pivOneConfig.MotorOutput;
         invert.Inverted = InvertedValue.CounterClockwise_Positive;
+        
 
 
         var slot0Configs1 = pivTwoConfig.Slot0;
@@ -114,8 +118,8 @@ public class Intake extends SubsystemBase {
     }
 
     public enum RollerState{
-        INTAKE(-7.5),
-        OUTTAKE(12),
+        INTAKE(-12),
+        OUTTAKE(9.5),
         STOP(0),
         IDLE(0);
         public double volts;

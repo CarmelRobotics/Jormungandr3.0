@@ -31,7 +31,9 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.Constants.VisionConstants;
+import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -118,13 +120,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             this
         )
     );
+
+private Pose2d MTONEpose(){
+    return null;
+}
     
 
 private void configureAutoBuilder() {
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
+                () -> getState().Pose ,   // Supplier of current robot pose
                 this::resetPose,         // Consumer for seeding pose against auto
                 () -> getState().Speeds, // Supplier of current robot speeds
                 // Consumer of ChassisSpeeds and feedforwards to drive the robot
@@ -135,7 +141,7 @@ private void configureAutoBuilder() {
                 ),
                 new PPHolonomicDriveController(
                     // PID constants for translation
-                    new PIDConstants(10.5, 4, 0),
+                    new PIDConstants(13.5, 4, 0),
                     // PID constants for rotation
                     new PIDConstants(7, 0, 0)
                 ),
@@ -292,8 +298,11 @@ private void configureAutoBuilder() {
         //         m_hasAppliedOperatorPerspective = true;
         //     });
         // }
-       
-        field.setRobotPose(this.getState().Pose);
+        // if(LimelightHelpers.getTargetCount("limelight-lltwo") > 0 ){
+        //     PoseEstimate estimate = (DriverStation.getAlliance().get() == DriverStation.Alliance.Red) ? LimelightHelpers.getBotPoseEstimate_wpiRed(VisionConstants.LIMELIGHT_NAME) : LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LIMELIGHT_NAME);
+        //     this.addVisionMeasurement(estimate.pose, estimate.timestampSeconds);
+        // }
+        // field.setRobotPose(this.getState().Pose);
         // DogLog.log("match time", RobotController.getTime());
         // DogLog.log("pose",this.getState().Pose);
         SmartDashboard.putData("field",field);

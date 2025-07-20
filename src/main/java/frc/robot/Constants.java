@@ -22,4 +22,7 @@ public final class Constants {
     public static final int kIntakePivotTwoCanID = 21;
     public static final int kIntakeRollerCanID = 22;
   }
+  public static class VisionConstants{
+    public static final String LIMELIGHT_NAME = "limelight-lltwo";
+  }
 }

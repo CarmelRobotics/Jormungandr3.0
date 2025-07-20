@@ -10,6 +10,7 @@ import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.vision;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.generated.*;
 import com.ctre.phoenix6.controls.SolidColor;
@@ -19,8 +20,11 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathConstraints;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -36,7 +40,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public Intake intake = new Intake();
-
+  public vision vision = new vision();
   public CANdle led = new CANdle(50);
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -77,7 +81,7 @@ public class RobotContainer {
               .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate * 1.25) // Drive counterclockwise
                                                                                     // with negative X (left)
       ));
-      drivetrain.close();
+     // drivetrain.close();
       this.m_driverController.leftTrigger().onTrue(this.intake.setState(IntakeState.INTAKING)).onFalse(this.intake.setState(IntakeState.STOW));
       this.m_driverController.rightTrigger().onTrue(this.intake.setState(IntakeState.SCORING)).onFalse(this.intake.setState(IntakeState.STOW));
      // this.m_driverController.rightBumper().onTrue(this.intake.setState(IntakeState.SCORE_BACK)).onFalse(this.intake.setState(IntakeState.STOW));
@@ -85,7 +89,9 @@ public class RobotContainer {
       this.m_driverController.a().onTrue(this.intake.setState(IntakeState.CLIMBSTART));
       this.m_driverController.b().onTrue(this.intake.setState(IntakeState.STOW_DOWN));
       this.m_driverController.x().onTrue(this.drivetrain.zeroGyro());
-      this.m_driverController.y().onFalse(this.intake.setState(IntakeState.STOW));
+     // this.m_driverController.y().onFalse(this.intake.setState(IntakeState.STOW));
+     this.m_driverController.y().onTrue(AutoBuilder.pathfindToPose(new Pose2d(3.325,4.350,Rotation2d.fromDegrees(180)), new PathConstraints(3.5,4,5,5)));
+
   }
 
 
